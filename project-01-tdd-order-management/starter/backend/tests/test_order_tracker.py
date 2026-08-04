@@ -1,8 +1,11 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from ..order_tracker import OrderTracker
 
 # --- Fixtures for Unit Tests ---
+
 
 @pytest.fixture
 def mock_storage():
@@ -17,12 +20,14 @@ def mock_storage():
     mock.get_all_orders.return_value = {}
     return mock
 
+
 @pytest.fixture
 def order_tracker(mock_storage):
     """
     Provides an OrderTracker instance initialized with the mock_storage.
     """
     return OrderTracker(mock_storage)
+
 
 def test_add_order_successfully(order_tracker, mock_storage):
     """Tests adding a new order with default 'pending' status."""
@@ -38,12 +43,14 @@ def test_add_order_successfully(order_tracker, mock_storage):
     assert result == expected_order
     mock_storage.save_order.assert_called_once_with("ORD001", expected_order)
 
+
 def test_add_order_raises_error_if_exists(order_tracker, mock_storage):
     """Tests that adding an order with a duplicate ID raises a ValueError."""
     # Simulate that the storage finds an existing order
     mock_storage.get_order.return_value = {"order_id": "ORD_EXISTING"}
 
-    with pytest.raises(ValueError, match="Order with ID 'ORD_EXISTING' already exists."):
+    error_message = "Order with ID 'ORD_EXISTING' already exists."
+    with pytest.raises(ValueError, match=error_message):
         order_tracker.add_order("ORD_EXISTING", "New Item", 1, "CUST001")
 
 
@@ -95,7 +102,9 @@ def test_get_order_by_id_rejects_empty_id(order_tracker, mock_storage):
     mock_storage.get_order.assert_not_called()
 
 
-def test_update_order_status_saves_and_returns_updated_order(order_tracker, mock_storage):
+def test_update_order_status_saves_and_returns_updated_order(
+    order_tracker, mock_storage
+):
     mock_storage.get_order.return_value = {
         "order_id": "ORD001",
         "item_name": "Laptop",
@@ -136,7 +145,9 @@ def test_list_all_orders_returns_every_order(order_tracker, mock_storage):
     mock_storage.get_all_orders.assert_called_once_with()
 
 
-def test_list_orders_by_status_returns_only_matching_orders(order_tracker, mock_storage):
+def test_list_orders_by_status_returns_only_matching_orders(
+    order_tracker, mock_storage
+):
     pending_order = {"order_id": "ORD001", "status": "pending"}
     shipped_order = {"order_id": "ORD002", "status": "shipped"}
     mock_storage.get_all_orders.return_value = {
