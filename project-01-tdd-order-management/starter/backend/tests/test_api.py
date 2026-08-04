@@ -51,3 +51,48 @@ def test_list_orders_by_status_api_matching(client):
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]['order_id'] == "S001"
+
+
+def test_add_order_api_rejects_invalid_payload(client):
+    response = client.post('/api/orders', json={
+        "order_id": "BAD001", "item_name": "Item", "quantity": 0, "customer_id": "C1"
+    })
+
+    assert response.status_code == 400
+    assert "positive integer" in response.json["error"]
+
+
+def test_add_order_api_rejects_duplicate_id(client):
+    order = {"order_id": "DUP001", "item_name": "Item", "quantity": 1, "customer_id": "C1"}
+    client.post('/api/orders', json=order)
+
+    response = client.post('/api/orders', json=order)
+
+    assert response.status_code == 409
+
+
+def test_update_order_status_at_restful_endpoint(client):
+    client.post('/api/orders', json={
+        "order_id": "STATUS001", "item_name": "Item", "quantity": 1, "customer_id": "C1"
+    })
+
+    response = client.put('/api/orders/STATUS001', json={"new_status": "delivered"})
+
+    assert response.status_code == 200
+    assert response.json["status"] == "delivered"
+
+
+def test_update_order_status_api_rejects_unknown_status(client):
+    client.post('/api/orders', json={
+        "order_id": "STATUS001", "item_name": "Item", "quantity": 1, "customer_id": "C1"
+    })
+
+    response = client.put('/api/orders/STATUS001', json={"new_status": "unknown"})
+
+    assert response.status_code == 400
+
+
+def test_update_order_status_api_returns_not_found(client):
+    response = client.put('/api/orders/MISSING', json={"new_status": "shipped"})
+
+    assert response.status_code == 404
