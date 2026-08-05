@@ -53,6 +53,21 @@ def test_list_orders_by_status_api_matching(client):
     assert response.json[0]['order_id'] == "S001"
 
 
+def test_list_orders_by_status_api_returns_empty_list_when_none_match(client):
+    client.post('/api/orders', json={
+        "order_id": "S003",
+        "item_name": "C",
+        "quantity": 1,
+        "customer_id": "C3",
+        "status": "pending",
+    })
+
+    response = client.get('/api/orders?status=shipped')
+
+    assert response.status_code == 200
+    assert response.json == []
+
+
 def test_add_order_api_rejects_invalid_payload(client):
     response = client.post('/api/orders', json={
         "order_id": "BAD001", "item_name": "Item", "quantity": 0, "customer_id": "C1"
@@ -71,12 +86,14 @@ def test_add_order_api_rejects_duplicate_id(client):
     assert response.status_code == 409
 
 
-def test_update_order_status_at_restful_endpoint(client):
+def test_update_order_status_at_required_endpoint(client):
     client.post('/api/orders', json={
         "order_id": "STATUS001", "item_name": "Item", "quantity": 1, "customer_id": "C1"
     })
 
-    response = client.put('/api/orders/STATUS001', json={"new_status": "delivered"})
+    response = client.put(
+        '/api/orders/STATUS001/status', json={"new_status": "delivered"}
+    )
 
     assert response.status_code == 200
     assert response.json["status"] == "delivered"
@@ -87,12 +104,16 @@ def test_update_order_status_api_rejects_unknown_status(client):
         "order_id": "STATUS001", "item_name": "Item", "quantity": 1, "customer_id": "C1"
     })
 
-    response = client.put('/api/orders/STATUS001', json={"new_status": "unknown"})
+    response = client.put(
+        '/api/orders/STATUS001/status', json={"new_status": "unknown"}
+    )
 
     assert response.status_code == 400
 
 
 def test_update_order_status_api_returns_not_found(client):
-    response = client.put('/api/orders/MISSING', json={"new_status": "shipped"})
+    response = client.put(
+        '/api/orders/MISSING/status', json={"new_status": "shipped"}
+    )
 
     assert response.status_code == 404

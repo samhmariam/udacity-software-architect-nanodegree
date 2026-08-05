@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 
-from backend.order_tracker import OrderTracker
 from backend.in_memory_storage import InMemoryStorage
+from backend.order_tracker import DuplicateOrderError, OrderTracker
 
 
 app = Flask(__name__, static_folder='../frontend')
@@ -39,9 +39,10 @@ def add_order_api():
             customer_id=data["customer_id"],
             status=data.get("status", "pending"),
         )
+    except DuplicateOrderError as error:
+        return jsonify(error=str(error)), 409
     except ValueError as error:
-        status_code = 409 if "already exists" in str(error) else 400
-        return jsonify(error=str(error)), status_code
+        return jsonify(error=str(error)), 400
 
     return jsonify(order), 201
 
@@ -54,7 +55,6 @@ def get_order_api(order_id):
     return jsonify(order), 200
 
 
-@app.route('/api/orders/<string:order_id>', methods=['PUT'])
 @app.route('/api/orders/<string:order_id>/status', methods=['PUT'])
 def update_order_status_api(order_id):
     data = request.get_json(silent=True)
@@ -82,7 +82,6 @@ def list_orders_api():
     except ValueError as error:
         return jsonify(error=str(error)), 400
     return jsonify(orders), 200
-
 
 
 if __name__ == '__main__':

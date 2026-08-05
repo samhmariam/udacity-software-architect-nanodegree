@@ -160,3 +160,16 @@ def test_list_orders_by_status_returns_only_matching_orders(
 
     assert result == [shipped_order]
     mock_storage.get_all_orders.assert_called_once_with()
+
+
+def test_list_orders_by_status_returns_empty_list_when_none_match(
+    order_tracker, mock_storage
+):
+    mock_storage.get_all_orders.return_value = {
+        "ORD001": {"order_id": "ORD001", "status": "pending"},
+    }
+
+    result = order_tracker.list_orders_by_status("shipped")
+
+    assert result == []
+    mock_storage.get_all_orders.assert_called_once_with()

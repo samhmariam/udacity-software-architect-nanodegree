@@ -33,7 +33,7 @@ The API is then available at `http://localhost:5000`.
 | --- | --- | --- | --- |
 | `POST` | `/api/orders` | Create an order | `201 Created` |
 | `GET` | `/api/orders/<order_id>` | Retrieve one order | `200 OK` |
-| `PUT` | `/api/orders/<order_id>` | Update an order's status | `200 OK` |
+| `PUT` | `/api/orders/<order_id>/status` | Update an order's status | `200 OK` |
 | `GET` | `/api/orders` | List all orders | `200 OK` |
 | `GET` | `/api/orders?status=<status>` | Filter orders by status | `200 OK` |
 
@@ -58,7 +58,7 @@ curl http://localhost:5000/api/orders/ORD001
 ### Update an order's status
 
 ```bash
-curl -X PUT http://localhost:5000/api/orders/ORD001 \
+curl -X PUT http://localhost:5000/api/orders/ORD001/status \
   -H "Content-Type: application/json" \
   -d '{"new_status":"shipped"}'
 ```

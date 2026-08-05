@@ -2,6 +2,10 @@
 # business logic for managing orders.
 
 
+class DuplicateOrderError(ValueError):
+    """Raised when an order ID is already present in storage."""
+
+
 class OrderTracker:
     """
     Manages customer orders, providing functionalities to add, update,
@@ -39,7 +43,9 @@ class OrderTracker:
         self._validate_status(status)
 
         if self.storage.get_order(order_id) is not None:
-            raise ValueError(f"Order with ID '{order_id}' already exists.")
+            raise DuplicateOrderError(
+                f"Order with ID '{order_id}' already exists."
+            )
 
         order = {
             "order_id": order_id,
