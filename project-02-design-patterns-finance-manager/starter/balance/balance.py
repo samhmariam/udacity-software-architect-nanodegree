@@ -20,12 +20,28 @@ class Balance:
             return
 
         self._balance = 0.0
+        self._observers = []
         self._initialized = True
 
     @classmethod
     def get_instance(cls):
         """Return the single balance manager instance."""
         return cls()
+
+    def register_observer(self, observer):
+        """Register an observer to receive balance-change notifications."""
+        if observer not in self._observers:
+            self._observers.append(observer)
+
+    def remove_observer(self, observer):
+        """Stop an observer from receiving balance-change notifications."""
+        if observer in self._observers:
+            self._observers.remove(observer)
+
+    def notify_observers(self, transaction):
+        """Notify all registered observers about an applied transaction."""
+        for observer in tuple(self._observers):
+            observer.update(self, transaction)
 
     def reset(self):
         """Reset the net balance to zero."""
@@ -52,6 +68,8 @@ class Balance:
             self.add_expense(transaction.amount)
         else:
             raise ValueError(f"Unsupported transaction category: {transaction.category}")
+
+        self.notify_observers(transaction)
 
     def get_balance(self):
         """Get the current net balance."""
