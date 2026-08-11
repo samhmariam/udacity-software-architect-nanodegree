@@ -1,6 +1,7 @@
 # balance.py
 
 from transaction.transaction_category import TransactionCategory
+from balance.transaction_strategy import ExpenseStrategy, IncomeStrategy
 
 
 class Balance:
@@ -21,6 +22,10 @@ class Balance:
 
         self._balance = 0.0
         self._observers = []
+        self._transaction_strategies = {
+            TransactionCategory.INCOME: IncomeStrategy(),
+            TransactionCategory.EXPENSE: ExpenseStrategy(),
+        }
         self._initialized = True
 
     @classmethod
@@ -43,6 +48,10 @@ class Balance:
         for observer in tuple(self._observers):
             observer.update(self, transaction)
 
+    def register_transaction_strategy(self, category, strategy):
+        """Set the calculation strategy used for a transaction category."""
+        self._transaction_strategies[category] = strategy
+
     def reset(self):
         """Reset the net balance to zero."""
         self._balance = 0.0
@@ -62,13 +71,11 @@ class Balance:
         Args:
             transaction (Transaction): The transaction to apply.
         """
-        if transaction.category == TransactionCategory.INCOME:
-            self.add_income(transaction.amount)
-        elif transaction.category == TransactionCategory.EXPENSE:
-            self.add_expense(transaction.amount)
-        else:
+        strategy = self._transaction_strategies.get(transaction.category)
+        if strategy is None:
             raise ValueError(f"Unsupported transaction category: {transaction.category}")
 
+        self._balance = strategy.calculate(self._balance, transaction.amount)
         self.notify_observers(transaction)
 
     def get_balance(self):

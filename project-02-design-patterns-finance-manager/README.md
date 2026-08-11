@@ -57,6 +57,32 @@ python -m unittest balance/test_balance_observer.py
 6. Choose and Implement a Fourth Pattern – Pick one additional design pattern (e.g., Strategy, Command, Decorator, etc.) and integrate it into your project.
 7. Provide a Reflection – Add a short write-up in your repo (README or separate file) explaining your design choices.
 
+## Additional Pattern: Strategy
+
+### Why Strategy was chosen
+
+Income and expenses currently change a balance in different ways, and future
+transaction types may introduce fees, interest, refunds, currency conversion,
+or other calculation rules. The Strategy pattern keeps each rule in a small,
+independent object instead of growing a conditional inside `Balance` whenever a
+new type is introduced.
+
+### Where it fits
+
+`TransactionStrategy` defines the calculation interface. `IncomeStrategy` and
+`ExpenseStrategy` implement the standard rules. `Balance` maps each
+`TransactionCategory` to a strategy and delegates the calculation when it
+applies a transaction. Additional categories can be supported through
+`register_transaction_strategy()` without changing `Balance.apply_transaction()`.
+
+### Benefits
+
+- **Flexibility:** calculation behavior can be selected or replaced at runtime.
+- **Testability:** each calculation rule can be unit tested without constructing
+  the rest of the application.
+- **Scalability:** new transaction rules are added as new strategy classes rather
+  than additional conditional branches in the balance manager.
+
 ## Built With
 
 * [Python](https://www.python.org/) – Main programming language
