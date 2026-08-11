@@ -1,7 +1,7 @@
 # balance.py
 
-from transaction.transaction_category import TransactionCategory
 from balance.transaction_strategy import ExpenseStrategy, IncomeStrategy
+from transaction.transaction_category import TransactionCategory
 
 
 class Balance:
@@ -73,7 +73,9 @@ class Balance:
         """
         strategy = self._transaction_strategies.get(transaction.category)
         if strategy is None:
-            raise ValueError(f"Unsupported transaction category: {transaction.category}")
+            raise ValueError(
+                f"Unsupported transaction category: {transaction.category}"
+            )
 
         self._balance = strategy.calculate(self._balance, transaction.amount)
         self.notify_observers(transaction)

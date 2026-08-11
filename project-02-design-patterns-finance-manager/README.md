@@ -83,12 +83,63 @@ applies a transaction. Additional categories can be supported through
 - **Scalability:** new transaction rules are added as new strategy classes rather
   than additional conditional branches in the balance manager.
 
+## Design Pattern Reflection
+
+This application uses four design patterns: Singleton, Adapter, Observer, and
+Strategy. Together, they separate balance state, external-data conversion,
+notifications, and calculation rules into focused responsibilities.
+
+### Singleton
+
+`Balance` is a Singleton, so every caller receives the same balance manager and
+there cannot be conflicting balances in different parts of the application.
+This provides one consistent source of truth and avoids passing a balance object
+through every layer. The trade-off is shared mutable state: tests and repeated
+simulations must reset the balance, and registered observers must be managed
+carefully to prevent state leaking between uses.
+
+### Adapter
+
+`TransactionAdapter` converts `ExternalFreelanceIncome` into the application's
+standard `Transaction` representation. This keeps third-party field formats and
+types out of the core balance logic. A different external provider can receive
+its own adapter without changing `Balance`. The trade-off is an additional
+wrapper for each incompatible external format, and the current adapter is
+intentionally specialized for income transactions.
+
+### Observer
+
+`Balance` notifies `PrintBalanceObserver` and `LowBalanceAlertObserver` after a
+transaction changes the balance. This decouples balance calculations from user
+output and alert policy, making observers independently replaceable and
+testable. The trade-off is lifecycle complexity: observers must be registered
+and removed correctly. Notification order and errors raised by an observer also
+need an explicit policy in a larger production system.
+
+### Strategy
+
+`IncomeStrategy` and `ExpenseStrategy` encapsulate the rules for calculating a
+new balance. `Balance` selects the appropriate strategy from the transaction
+category, and custom strategies can be registered without modifying its
+transaction-processing method. This improves extension and unit testing as new
+rules such as fees, refunds, or interest are introduced. The trade-off is more
+classes and configuration than a small `if` statement, so the benefit becomes
+most valuable as the number and complexity of transaction rules grows.
+
+### Implementation challenges
+
+The main challenge was making the patterns cooperate without mixing their
+responsibilities. Because `Balance` is shared, observer registrations can also
+persist and affect later tests; tests therefore remove the observers they add.
+Observer notifications occur only after a strategy successfully applies a
+transaction, which prevents alerts from reporting changes that never happened.
+The adapter also deliberately exposes only the external amount and maps the
+external record to `INCOME`, keeping provider-specific invoice details outside
+the internal transaction model. These choices keep the example small and clear,
+but a production application would likely add validation, persistent storage,
+observer error isolation, and adapters for more external transaction types.
+
 ## Built With
 
-* [Python](https://www.python.org/) – Main programming language
 * [unittest](https://docs.python.org/3/library/unittest.html) – Testing framework
 * [PEP8](https://peps.python.org/pep-0008/) – Style guide for Python code
-
-## License
-
-[License](LICENSE.txt)
