@@ -17,6 +17,13 @@ class TestBalance(unittest.TestCase):
         balance2 = Balance.get_instance()
         self.assertIs(balance1, balance2)
 
+    def test_direct_construction_returns_singleton(self):
+        self.assertIs(Balance(), Balance.get_instance())
+
+    def test_repeated_access_preserves_balance(self):
+        self.balance.add_income(25)
+        self.assertEqual(Balance.get_instance().get_balance(), 25)
+
     def test_add_income(self):
         self.balance.add_income(100)
         self.assertEqual(self.balance.get_balance(), 100)
@@ -47,6 +54,10 @@ class TestBalance(unittest.TestCase):
         self.balance.add_expense(50)
         self.balance.reset()
         self.assertEqual(self.balance.get_balance(), 0.0)
+
+    def test_summary_formats_balance_to_two_decimal_places(self):
+        self.balance.add_income(12.5)
+        self.assertEqual(self.balance.summary(), "Net balance: 12.50")
 
 if __name__ == "__main__":
     unittest.main()

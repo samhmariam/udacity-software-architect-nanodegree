@@ -12,5 +12,17 @@ class TestTransactionAdapter(unittest.TestCase):
         txn = adapter.to_transaction()
         self.assertEqual(txn, Transaction(500, TransactionCategory.INCOME))
 
+    def test_adapter_preserves_external_amount(self):
+        ext_txn = ExternalFreelanceIncome(725.50, "INV-2", "API design")
+        txn = TransactionAdapter(ext_txn).to_transaction()
+
+        self.assertEqual(txn.amount, 725.50)
+
+    def test_adapter_always_creates_income_transaction(self):
+        ext_txn = ExternalFreelanceIncome(10, "INV-3", "Consulting")
+        txn = TransactionAdapter(ext_txn).to_transaction()
+
+        self.assertIs(txn.category, TransactionCategory.INCOME)
+
 if __name__ == "__main__":
     unittest.main()

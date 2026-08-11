@@ -1,7 +1,11 @@
 import unittest
 
 from balance.balance import Balance
-from balance.transaction_strategy import ExpenseStrategy, IncomeStrategy
+from balance.transaction_strategy import (
+    ExpenseStrategy,
+    IncomeStrategy,
+    TransactionStrategy,
+)
 from transaction.transaction import Transaction
 from transaction.transaction_category import TransactionCategory
 
@@ -19,6 +23,10 @@ class TestTransactionStrategy(unittest.TestCase):
     def test_expense_strategy_subtracts_amount(self):
         strategy = ExpenseStrategy()
         self.assertEqual(strategy.calculate(100, 25), 75)
+
+    def test_abstract_strategy_cannot_be_instantiated(self):
+        with self.assertRaises(TypeError):
+            TransactionStrategy()
 
     def test_balance_uses_strategy_for_transaction_category(self):
         self.balance.apply_transaction(
