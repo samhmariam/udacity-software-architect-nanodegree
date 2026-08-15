@@ -316,7 +316,7 @@ sequenceDiagram
     R->>K: Publish fraud.alert.created
     K-->>R: Ack
     R->>DB: Mark published
-    Note over C,K: Duplicate delivery is safe; consumers deduplicate by event_id/business key
+    Note over C,K: Duplicate delivery is safe because consumers deduplicate using the event ID or business key
 ```
 
 ### Schema evolution
