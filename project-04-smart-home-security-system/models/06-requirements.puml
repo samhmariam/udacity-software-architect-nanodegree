@@ -1,0 +1,32 @@
+@startuml
+title SSHSS SysML Requirements Traceability (Critical Chains)
+left to right direction
+skinparam classAttributeIconSize 0
+
+class "NEED-01\nProtect the residence during intrusion" as N1 <<stakeholderNeed>>
+class "FR-08\nOn Alarm, command siren, create incident,\nrequest clips, and queue alerts" as FR08 <<requirement>>
+class "FR-13\nContinue local security functions offline" as FR13 <<requirement>>
+class "PR-02\nSiren begins within 1.0 s" as PR02 <<requirement>>
+class "SEC-08\nFail secure on invalid commands" as SEC08 <<requirement>>
+
+class "CCU Alarm Engine" as Engine <<block>>
+class "Durable Sync Queue" as Queue <<block>>
+class "Identity and Replay Guard" as Guard <<block>>
+
+class "TC-03\nAlarm latency test" as TC03 <<testCase>>
+class "TC-06\nWAN outage test" as TC06 <<testCase>>
+class "TC-09\nAdversarial interface test" as TC09 <<testCase>>
+
+N1 ..> FR08 : «deriveReqt»
+FR08 ..> PR02 : «deriveReqt»
+FR08 ..> FR13 : «deriveReqt»
+FR08 ..> SEC08 : «deriveReqt»
+Engine ..> FR08 : «satisfy»
+Engine ..> PR02 : «satisfy»
+Queue ..> FR13 : «satisfy»
+Guard ..> SEC08 : «satisfy»
+TC03 ..> FR08 : «verify»
+TC03 ..> PR02 : «verify»
+TC06 ..> FR13 : «verify»
+TC09 ..> SEC08 : «verify»
+@enduml

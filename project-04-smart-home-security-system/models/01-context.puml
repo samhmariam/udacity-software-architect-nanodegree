@@ -1,0 +1,38 @@
+@startuml
+title SSHSS SysML Context
+left to right direction
+skinparam componentStyle rectangle
+
+actor Owner
+actor "Household member" as Member
+actor Installer
+actor "Emergency services" as Responder
+
+rectangle "«system»\nSentinel Smart Home Security System" as System {
+  component "Central Control Unit" as CCU
+  component "Sensors / Cameras / Siren" as Devices
+  component "Mobile application" as App
+  component "Cloud notification service" as Cloud
+}
+cloud "Home IP network / Internet" as Network
+component "Push / SMS provider" as Provider
+
+Owner --> App : arm, disarm, configure, review
+Member --> App : operate, acknowledge
+Owner --> CCU : local operation
+Member --> CCU : local operation
+Installer --> CCU : enroll, diagnose
+Devices <--> CCU : authenticated events / commands
+CCU <--> Network : encrypted IP traffic
+Network <--> Cloud
+App <--> Cloud : status / commands / alerts
+Cloud --> Provider : notification request
+Provider --> Owner : push / SMS
+Owner --> Responder : human-assessed call
+
+note bottom of System
+System boundary includes local devices, app, and service.
+Internet, household router, provider, and responders are external.
+end note
+@enduml
+

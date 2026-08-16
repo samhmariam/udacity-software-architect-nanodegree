@@ -1,0 +1,39 @@
+@startuml
+title SSHSS Alarm Interaction Sequence
+actor Intruder
+participant Sensor
+participant "Central Control Unit" as CCU
+participant Camera
+participant Siren
+participant Cloud
+participant "Mobile App" as App
+actor Owner
+
+Intruder -> Sensor : motion / entry
+Sensor -> CCU : authenticated SensorEvent(counter, zone, time)
+CCU -> CCU : validate identity, freshness, mode, zone policy
+CCU -> CCU : enter Alarm; persist incident
+par Local deterrence
+  CCU -> Siren : AlarmCommand
+  Siren --> CCU : command acknowledgement / health
+else Evidence
+  CCU -> Camera : preserve pre-buffer and record post-event
+  Camera --> CCU : clip reference / health
+else Remote notification
+  CCU -> Cloud : queued IncidentAlert(idempotency key)
+  Cloud -> App : push alert
+  App -> Owner : residence, zone, time, actions
+end
+Owner -> App : authenticate and acknowledge/silence
+App -> Cloud : authorized command
+Cloud -> CCU : signed, fresh command
+CCU -> Siren : SilenceCommand
+CCU -> CCU : append acknowledgement; retain incident
+
+alt Internet unavailable
+  CCU -> CCU : retain alert in durable queue
+  note right of CCU: Local detection, siren, evidence, and panel continue
+  CCU -> Cloud : reconnect: delayed alert in chronological order
+end
+@enduml
+

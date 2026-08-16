@@ -1,0 +1,58 @@
+@startuml
+title SSHSS SysML Use-Case Diagram
+left to right direction
+skinparam packageStyle rectangle
+
+actor Owner
+actor "Household Member" as Member
+actor Guest
+actor Installer
+actor "Notification Provider" as Provider
+
+rectangle "«system» Sentinel Smart Home Security System" {
+  usecase "Arm Stay / Away" as Arm
+  usecase "Authenticate User" as Auth
+  usecase "Disarm System" as Disarm
+  usecase "Monitor Sensors" as Monitor
+  usecase "Detect Intrusion" as Detect
+  usecase "Activate Siren / Strobe" as Alarm
+  usecase "Record Incident Video" as Record
+  usecase "Notify Recipients" as Notify
+  usecase "View Status and Incident" as View
+  usecase "Control Smart Lock / Light" as Control
+  usecase "Configure Zones, Users,\nand Retention" as Configure
+  usecase "Enroll / Diagnose Device" as Maintain
+  usecase "Supervise Power and Health" as Health
+}
+
+Owner --> Arm
+Owner --> Disarm
+Owner --> View
+Owner --> Control
+Owner --> Configure
+Member --> Arm
+Member --> Disarm
+Member --> View
+Member --> Control
+Guest --> Disarm
+Installer --> Maintain
+Provider --> Notify
+
+Arm .> Auth : «include»
+Disarm .> Auth : «include»
+Control .> Auth : «include»
+Configure .> Auth : «include»
+Maintain .> Auth : «include»
+Detect .> Monitor : «include»
+Alarm .> Detect : «extend»\n[armed and valid trigger]
+Record .> Detect : «extend»\n[associated camera available]
+Notify .> Alarm : «extend»\n[recipient configured]
+View .> Auth : «include»
+Health .> Notify : «extend»\n[reportable fault]
+
+note bottom of Detect
+The control unit evaluates normalized sensor events
+against mode, zone policy, delay, and authorization state.
+end note
+@enduml
+

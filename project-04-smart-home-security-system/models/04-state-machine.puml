@@ -1,0 +1,40 @@
+@startuml
+title SSHSS SysML State Machine
+
+[*] --> Initializing
+Initializing --> Disarmed : self-test complete / restore configuration
+Initializing --> Degraded : critical self-test fault / report fault
+
+Disarmed --> ExitDelay : armAway [authorized] / start exit timer
+Disarmed --> ArmedStay : armStay [authorized] / bypass configured interior zones
+ExitDelay --> ArmedAway : timer expired [exit clear] / enable all configured zones
+ExitDelay --> Disarmed : cancel [authorized]
+ExitDelay --> ExitDelay : protected-zone event / warn user
+
+ArmedAway --> EntryDelay : delayed-zone event / start entry timer, request clip
+ArmedAway --> Alarm : instant-zone event / activate alarm actions
+ArmedStay --> EntryDelay : delayed perimeter event / start entry timer, request clip
+ArmedStay --> Alarm : instant perimeter event / activate alarm actions
+EntryDelay --> Disarmed : disarm [authorized] / cancel pending alarm
+EntryDelay --> Alarm : timer expired / siren, incident, clips, alerts
+Alarm --> Disarmed : disarm [authorized] / silence, retain incident
+Alarm --> Alarm : additional event / append to incident
+ArmedAway --> Disarmed : disarm [authorized]
+ArmedStay --> Disarmed : disarm [authorized]
+
+state Degraded {
+  [*] --> Reporting
+  Reporting : Continue safe available local functions
+  Reporting : Display unavailable coverage
+}
+
+Disarmed --> Degraded : unrecoverable controller fault
+Degraded --> Initializing : fault cleared / self-test
+
+note right of Alarm
+Alarm preempts ordinary operation.
+Loss of cloud, camera, or WAN is a health condition,
+not a transition that suppresses local alarming.
+end note
+@enduml
+

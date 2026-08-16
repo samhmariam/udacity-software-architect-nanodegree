@@ -1,0 +1,31 @@
+@startuml
+title SSHSS SysML Internal Block Diagram
+skinparam componentStyle rectangle
+
+rectangle "ibd [Sentinel Security System]" {
+  component "sensor: Motion/Entry" as Sensor
+  component "camera: Camera" as Camera
+  component "panel: Local Panel" as Panel
+  component "ccu: Central Control Unit" as CCU
+  component "siren: Siren" as Siren
+  component "cloud: Cloud Service" as Cloud
+  component "app: Mobile Application" as App
+
+  Sensor --> CCU : «itemFlow» SensorEvent, Heartbeat
+  CCU --> Sensor : «itemFlow» Config, Challenge
+  Camera --> CCU : «itemFlow» Clip, Health
+  CCU --> Camera : «itemFlow» RecordRequest
+  Panel <--> CCU : «itemFlow» UserCommand, Status
+  CCU --> Siren : «itemFlow» AlarmCommand
+  Siren --> CCU : «itemFlow» Health, Tamper
+  CCU --> Cloud : «itemFlow» Incident, Status, AuditExport
+  Cloud --> CCU : «itemFlow» AuthenticatedCommand, Time
+  App <--> Cloud : «itemFlow» UserRequest, Alert, View
+}
+
+note right of CCU
+Authoritative state and local alarm logic.
+Durable outbound queue crosses the Internet boundary.
+end note
+@enduml
+

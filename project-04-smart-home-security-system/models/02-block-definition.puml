@@ -1,0 +1,90 @@
+@startuml
+title SSHSS SysML Block Definition Diagram
+skinparam classAttributeIconSize 0
+
+class "Sentinel Security System" as System <<system>>
+class "Central Control Unit" as CCU <<block>> {
+  +processSensorEvents()
+  +manageSecurityState()
+  +authorizeUserCommands()
+  +coordinateDevices()
+  +storeAndSynchronizeData()
+}
+class "Sensor Subsystem" as Sensors <<block>> {
+  +senseCondition()
+  +triggerEvent()
+  +reportHealth()
+}
+class "Motion Sensor" as Motion <<block>>
+class "Door / Window Sensor" as Entry <<block>>
+class "Water Leak Sensor" as Water <<block>>
+class "Camera Subsystem" as Cameras <<block>> {
+  +streamLiveVideo()
+  +bufferAndRecordClip()
+}
+class "IP Camera" as Camera <<block>>
+class "Alarm System" as Alarm <<block>> {
+  +activateSirenAndStrobe()
+  +createAlarmNotification()
+}
+class "Siren / Strobe" as Siren <<block>>
+class "Notification Service" as Notification <<block>>
+class "Controller Subsystem" as Controllers <<block>>
+class "Smart Lock Controller" as Lock <<block>>
+class "Smart Light Controller" as Light <<block>>
+class "User Interface" as UI <<block>> {
+  +displayStatusAndVideo()
+  +armDisarmAcknowledge()
+  +configureSystem()
+}
+class "Wall-mounted Panel" as Panel <<block>>
+class "Mobile Application" as App <<block>>
+class "Web Browser" as Browser <<block>>
+class "Cloud Services" as Cloud <<block>> {
+  +remoteAccessRelay()
+  +deliverNotifications()
+  +storeMinimalMetadata()
+}
+class "Power Supply" as Power <<block>> {
+  +mainsInput
+  +batteryBackup
+  +powerMonitoring
+}
+
+System *-- "1" CCU
+System *-- "1" Sensors
+System *-- "1" Cameras
+System *-- "1" Alarm
+System *-- "1" Controllers
+System *-- "1" UI
+System *-- "0..1" Cloud
+System *-- "1" Power
+
+Sensors *-- "0..32" Motion
+Sensors *-- "0..32" Entry
+Sensors *-- "0..16" Water
+Cameras *-- "0..8" Camera
+Alarm *-- "1..2" Siren
+Alarm *-- "1" Notification
+Controllers *-- "0..8" Lock
+Controllers *-- "0..16" Light
+UI *-- "1" Panel
+UI *-- "1" App
+UI *-- "0..1" Browser
+
+CCU ..> Sensors : «allocate» supervise / consume triggers
+CCU ..> Cameras : «allocate» live view / clip requests
+CCU ..> Alarm : «allocate» alarm decisions / commands
+CCU ..> Controllers : «allocate» authorized physical control
+UI ..> CCU : «allocate» local user interaction
+UI ..> Cloud : «allocate» remote user interaction
+Cloud ..> CCU : «allocate» authenticated relay / synchronization
+Power ..> CCU : «allocate» conditioned / backup power
+Power ..> Alarm : «allocate» backup alarm power
+
+note right of CCU
+The CCU is the authoritative central controller.
+It processes and manages data and mediates between
+users, sensors, cameras, alarms, and controllers.
+end note
+@enduml
